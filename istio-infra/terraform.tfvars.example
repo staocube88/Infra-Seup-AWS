@@ -1,0 +1,117 @@
+# Istio Infrastructure Configuration Example
+# Copy this file to terraform.tfvars and customize the values
+
+# ───────────────────────────────
+# Required Configuration
+# ───────────────────────────────
+
+# Kubernetes cluster endpoint (HTTPS URL)
+cluster_endpoint = "https://your-cluster-endpoint.example.com"
+
+# Base64 encoded CA certificate for the cluster
+cluster_ca_cert = "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0t..."
+
+# Service account token for cluster access
+cluster_token = "eyJhbGciOiJSUzI1NiIsImtpZCI6Ik1yUS1BRlpB..."
+
+# ───────────────────────────────
+# Environment Configuration
+# ───────────────────────────────
+
+# Environment name (dev, staging, prod)
+environment = "dev"
+
+# Istio version to install
+istio_version = "1.22.1"
+
+# Istio system namespace name
+namespace_name = "istio-system"
+
+# ───────────────────────────────
+# Mesh Configuration
+# ───────────────────────────────
+
+# Unique identifier for the Istio mesh
+mesh_id = "mesh1"
+
+# Name of the Kubernetes cluster
+cluster_name = "cluster-1"
+
+# Name of the network for multi-cluster setup
+network_name = "network1"
+
+# ───────────────────────────────
+# Feature Flags
+# ───────────────────────────────
+
+# Enable Istio ingress gateway
+enable_ingress_gateway = true
+
+# Enable Istio egress gateway
+enable_egress_gateway = false
+
+# Enable multi-cluster configuration
+enable_multi_cluster = false
+
+# Enable telemetry components
+enable_telemetry = true
+
+# Enable security components
+enable_security = true
+
+# ───────────────────────────────
+# Gateway Configuration
+# ───────────────────────────────
+
+# Service type for ingress gateway (ClusterIP, NodePort, LoadBalancer)
+ingress_gateway_type = "LoadBalancer"
+
+# ───────────────────────────────
+# Resource Configuration
+# ───────────────────────────────
+
+# Resource limits for Istio components
+resource_limits = {
+  istiod = {
+    cpu    = "2000m"
+    memory = "4096Mi"
+  }
+  ingress_gateway = {
+    cpu    = "2000m"
+    memory = "1024Mi"
+  }
+  egress_gateway = {
+    cpu    = "2000m"
+    memory = "1024Mi"
+  }
+}
+
+# Resource requests for Istio components
+resource_requests = {
+  istiod = {
+    cpu    = "500m"
+    memory = "2048Mi"
+  }
+  ingress_gateway = {
+    cpu    = "100m"
+    memory = "128Mi"
+  }
+  egress_gateway = {
+    cpu    = "100m"
+    memory = "128Mi"
+  }
+}
+
+# ───────────────────────────────
+# Tags and Metadata
+# ───────────────────────────────
+
+# Tags to apply to all resources
+tags = {
+  Project     = "Istio Infrastructure"
+  Environment = "dev"
+  ManagedBy   = "Terraform"
+  Owner       = "Platform Team"
+  CostCenter  = "Engineering"
+  Application = "Service Mesh"
+}

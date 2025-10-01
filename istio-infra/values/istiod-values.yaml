@@ -1,0 +1,97 @@
+# Istio Control Plane (istiod) Configuration
+# This file contains the configuration for the Istio control plane
+
+global:
+  # Enable Istio CNI plugin
+  cni:
+    enabled: false
+  
+  # Default resources for istiod
+  defaultResources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 2000m
+      memory: 2048Mi
+
+  # Multi-cluster configuration
+  multiCluster:
+    clusterName: "cluster-1"
+    enabled: false
+
+  # Mesh configuration
+  meshID: "mesh1"
+  network: "network1"
+
+  # Logging configuration
+  logLevel: info
+  logAsJson: false
+
+  # Proxy configuration
+  proxy:
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 2000m
+        memory: 1024Mi
+
+# Pilot (istiod) specific configuration
+pilot:
+  # Enable autoscaling
+  autoscaleEnabled: true
+  autoscaleMin: 1
+  autoscaleMax: 5
+  
+  # Resource configuration
+  resources:
+    requests:
+      cpu: 500m
+      memory: 2048Mi
+    limits:
+      cpu: 2000m
+      memory: 4096Mi
+
+  # Environment variables
+  env:
+    PILOT_ENABLE_WORKLOAD_ENTRY_AUTOREGISTRATION: true
+    PILOT_ENABLE_CROSS_CLUSTER_WORKLOAD_ENTRY: true
+    PILOT_ENABLE_WORKLOAD_ENTRY_CROSS_CLUSTER: true
+
+  # Service configuration
+  service:
+    type: ClusterIP
+    ports:
+      grpc-xds:
+        port: 15010
+        targetPort: 15010
+        protocol: TCP
+      https-xds:
+        port: 15011
+        targetPort: 15011
+        protocol: TCP
+      webhook:
+        port: 15017
+        targetPort: 15017
+        protocol: TCP
+
+# Telemetry configuration
+telemetry:
+  enabled: true
+  v2:
+    enabled: true
+    prometheus:
+      enabled: true
+      configOverride:
+        inboundSidecar:
+          disableHostHeaderFallback: true
+        outboundSidecar:
+          disableHostHeaderFallback: true
+        gateway:
+          disableHostHeaderFallback: true
+
+# Security configuration
+security:
+  enabled: true

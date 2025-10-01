@@ -31,4 +31,10 @@ variable "private_security_group_id" {
   
 }
 
+variable "bastion_public_ip" {
+  description = "Public IP of the bastion host for SSH access"
+  type        = string
+  default     = ""
+}
+
   

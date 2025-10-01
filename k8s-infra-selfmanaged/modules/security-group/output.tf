@@ -7,3 +7,9 @@ output "worker_security_group" {
 output "kube_subnet_id" {
   value = data.aws_subnet.kube_subnet.id
 }
+output "public_subnet_id" {
+  value = data.aws_subnet.public_subnet.id
+}
+output "vpc_id" {
+  value = data.aws_vpc.private_vpc.id
+}

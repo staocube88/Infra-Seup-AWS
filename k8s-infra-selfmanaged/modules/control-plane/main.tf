@@ -28,15 +28,27 @@ resource "aws_instance" "instance_control_plane" {
         AWS_PASSWORD = var.aws_password
         role_name    = "control-plane"
      }))
-       #check file
+    # Wait for user data script to complete and create join.sh file
     provisioner "remote-exec" {
-      inline = [ "while [ ! -e /tmp/join.sh ]; do sleep 60 ; done" ]
-    }
-    connection {
-      type     = "ssh" 
-      user     = var.aws_user
-      password = var.aws_password
-      host     = self.private_ip
+      inline = [
+        "echo 'Waiting for user data script to complete...'",
+        "while [ ! -e /tmp/join.sh ]; do echo 'Waiting for join.sh...'; sleep 30; done",
+        "echo 'join.sh file found, waiting for Kubernetes to be ready...'",
+        "sleep 60",
+        "echo 'Control plane setup completed'"
+      ]
+      
+      connection {
+        type     = "ssh" 
+        user     = var.aws_user
+        password = var.aws_password
+        host     = self.private_ip
+        timeout  = "10m"
+        # SSH through bastion to private instance
+        bastion_host = var.bastion_public_ip
+        bastion_user = var.aws_user
+        bastion_password = var.aws_password
+      }
     }
 
     tags={

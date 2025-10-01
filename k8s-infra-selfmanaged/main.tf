@@ -10,6 +10,22 @@ module "security_groups" {
   worker_udp_egress = var.worker_udp_egress
   vpc_name          = var.vpc_name
   subnet_name       = var.subnet_name
+  env               = var.env
+}
+
+# ───────────────────────────────
+# Bastion Host for Secure Access
+# ───────────────────────────────
+module "bastion_host" {
+  source = "./modules/bastion"
+  
+  env                      = var.env
+  aws_ami_id              = var.aws_ami_id
+  aws_user                = var.aws_user
+  aws_password            = var.aws_password
+  vpc_id                  = module.security_groups.vpc_id
+  public_subnet_id        = module.security_groups.public_subnet_id
+  private_security_group_id = module.security_groups.control_plane_security_group
 }
 
 
@@ -27,6 +43,7 @@ module "control-plane" {
   aws_user                 = var.aws_user 
   aws_password             = var.aws_password
   private_security_group_id= module.security_groups.control_plane_security_group
+  bastion_public_ip        = module.bastion_host.bastion_public_ip
   
 }# depend on null and wait here
 resource "time_sleep" "delay" {

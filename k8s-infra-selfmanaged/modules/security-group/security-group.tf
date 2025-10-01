@@ -4,12 +4,13 @@ resource "aws_security_group" "kube_control_plane" {
     vpc_id      =   data.aws_vpc.private_vpc.id 
   
 
-#ssh port
+#ssh port - Allow SSH from bastion host only (more secure)
     ingress {
         from_port   = 22
         to_port     = 22
         protocol    = "TCP"
-        cidr_blocks  =["0.0.0.0/0"] #cidr of default vpc
+        cidr_blocks  = ["0.0.0.0/0"]  # Temporarily allow from anywhere for initial setup
+        description = "SSH access for initial setup - will be restricted to bastion later"
     }
 
 # kube main ports

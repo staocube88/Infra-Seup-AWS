@@ -1,0 +1,84 @@
+# Istio Ingress Gateway Configuration
+# This file contains the configuration for the Istio ingress gateway
+
+# Gateway service configuration
+service:
+  type: LoadBalancer
+  ports:
+    - port: 80
+      targetPort: 8080
+      name: http2
+      protocol: TCP
+    - port: 443
+      targetPort: 8443
+      name: https
+      protocol: TCP
+    - port: 15443
+      targetPort: 15443
+      name: tls
+      protocol: TCP
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+    service.beta.kubernetes.io/aws-load-balancer-backend-protocol: "tcp"
+    service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
+
+# Gateway pod configuration
+podAnnotations:
+  sidecar.istio.io/inject: "false"
+
+# Resource configuration
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 2000m
+    memory: 1024Mi
+
+# Autoscaling configuration
+autoscaleEnabled: true
+autoscaleMin: 1
+autoscaleMax: 5
+
+# Environment variables
+env:
+  # Enable gateway metrics
+  ISTIO_META_ROUTER_MODE: "sni-dnat"
+  ISTIO_META_DNS_CAPTURE: "true"
+
+# Security context
+securityContext:
+  runAsUser: 1337
+  runAsGroup: 1337
+  runAsNonRoot: true
+  fsGroup: 1337
+
+# Pod disruption budget
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+
+# Node selector and tolerations
+nodeSelector: {}
+tolerations: []
+
+# Affinity rules
+affinity: {}
+
+# Labels
+labels:
+  app: istio-ingressgateway
+  istio: ingressgateway
+  release: istio-ingress
+
+# Service account
+serviceAccount:
+  create: true
+  name: ""
+
+# Pod security context
+podSecurityContext:
+  runAsUser: 1337
+  runAsGroup: 1337
+  runAsNonRoot: true
+  fsGroup: 1337

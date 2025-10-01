@@ -9,6 +9,18 @@ data "aws_subnet" "kube_subnet" {
   }
 }
 
+# Data source for public subnet (for bastion host)
+data "aws_subnet" "public_subnet" {
+  filter {
+    name   = "vpc-id"
+    values = [data.aws_vpc.private_vpc.id]
+  }
+  filter{
+    name ="tag:Name"
+    values = ["${var.env}-public-subnet"]
+  }
+}
+
 data "aws_vpc" "private_vpc" {
     
   filter {
