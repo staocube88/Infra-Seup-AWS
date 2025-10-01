@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
 jobs: 
   DEV: 
-    runs-on: rhel_arm   
+    runs-on: ubuntu-latest   
     steps:
       - name: Import secrets hashicorp 
         uses: hashicorp/vault-action@v2.4.0
