@@ -1,0 +1,73 @@
+# Istio Monitoring and Observability Configuration
+# This file contains monitoring and observability settings for Istio
+
+# Enable Prometheus metrics
+telemetry:
+  enabled: true
+  v2:
+    enabled: true
+    prometheus:
+      enabled: true
+      configOverride:
+        inboundSidecar:
+          disableHostHeaderFallback: true
+        outboundSidecar:
+          disableHostHeaderFallback: true
+        gateway:
+          disableHostHeaderFallback: true
+      # Metrics configuration
+      metrics:
+        - name: requests_total
+          dimensions:
+            source_cluster: "kubernetes"
+            destination_cluster: "kubernetes"
+            request_protocol: "http"
+            response_code: "200"
+        - name: request_duration_milliseconds
+          dimensions:
+            source_cluster: "kubernetes"
+            destination_cluster: "kubernetes"
+            request_protocol: "http"
+            response_code: "200"
+
+# Enable tracing
+tracing:
+  enabled: true
+  provider: "jaeger"
+  sampling: 1.0
+
+# Enable access logging
+accessLogFile: "/dev/stdout"
+accessLogFormat: |
+  {
+    "timestamp": "%START_TIME%",
+    "method": "%REQ(:METHOD)%",
+    "path": "%REQ(X-ENVOY-ORIGINAL-PATH?:PATH)%",
+    "protocol": "%PROTOCOL%",
+    "response_code": "%RESPONSE_CODE%",
+    "response_flags": "%RESPONSE_FLAGS%",
+    "bytes_received": "%BYTES_RECEIVED%",
+    "bytes_sent": "%BYTES_SENT%",
+    "duration": "%DURATION%",
+    "upstream_service_time": "%RESP(X-ENVOY-UPSTREAM-SERVICE-TIME)%",
+    "x_forwarded_for": "%REQ(X-FORWARDED-FOR)%",
+    "user_agent": "%REQ(USER-AGENT)%",
+    "request_id": "%REQ(X-REQUEST-ID)%",
+    "authority": "%REQ(:AUTHORITY)%",
+    "upstream_host": "%UPSTREAM_HOST%"
+  }
+
+# Enable debug logging
+logLevel: info
+logAsJson: true
+
+# Enable metrics collection
+metrics:
+  enabled: true
+  collectionInterval: "10s"
+  
+# Enable distributed tracing
+distributedTracing:
+  enabled: true
+  provider: "jaeger"
+  sampling: 1.0
