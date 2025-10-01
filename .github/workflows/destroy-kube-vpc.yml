@@ -1,0 +1,17 @@
+name: Destroy  Kubernetes VPC Infrastructure
+on: 
+  workflow_dispatch: 
+jobs: 
+  DEV-DESTROY: 
+    runs-on: rhel_arm 
+    steps: 
+      - uses: actions/checkout@v4 
+      - name: Terraform init 
+        run: | 
+          cd vpc-kube-infra
+          terraform init -backend-config=env-dev/state.tfvars
+      - name: Destroying VPC Infrastructure 
+        run: |
+         cd vpc-kube-infra 
+         terraform destroy -var-file=env-dev/main.tfvars -auto-approve
+          

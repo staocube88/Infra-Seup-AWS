@@ -1,0 +1,24 @@
+name: Create VPC Infrastructure
+on: 
+  workflow_dispatch: 
+jobs: 
+# DEV-PLAN
+  DEV-APPLY:
+    runs-on: rhel_arm
+    steps: 
+      - uses: actions/checkout@v4
+      - name: Terraform init 
+        run: | 
+          cd vpc-infra-2-az
+          terraform init -backend-config=env-dev/state.tfvars
+      - name: Terraform plan 
+        run: | 
+          cd vpc-infra-2-az
+          terraform plan -var-file=env-dev/main.tfvars 
+      - name: Terraform apply 
+        run: | 
+          cd vpc-infra-2-az
+          terraform apply -var-file=env-dev/main.tfvars -auto-approve
+#QA
+# UAT
+#PROD

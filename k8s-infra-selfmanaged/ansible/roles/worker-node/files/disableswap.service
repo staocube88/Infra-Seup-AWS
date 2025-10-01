@@ -1,0 +1,12 @@
+[Unit]
+Description=Disable Swap at Boot
+After=multi-user.target
+
+[Service]
+Type=oneshot
+ExecStart=/bin/bash -c '/sbin/swapoff -a && echo "$(date) - Swap disabled" >> /var/log/disableswap.log'
+ExecStartPost=/bin/bash -c '/sbin/modprobe -r zram && echo "$(date) - ZRAM module removed" >> /var/log/disableswap.log'
+RemainAfterExit=true
+
+[Install]
+WantedBy=multi-user.target

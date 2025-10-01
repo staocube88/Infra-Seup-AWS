@@ -1,0 +1,26 @@
+[Unit]
+Description=containerd container runtime
+Documentation=https://containerd.io
+After=network.target dbus.service
+
+[Service]
+ExecStartPre=-/sbin/modprobe overlay
+ExecStart=/usr/local/bin/containerd >> /var/log/containerd.log 2>&1
+
+Type=notify
+Delegate=yes
+KillMode=process
+Restart=always
+RestartSec=5
+
+# Use cgroups for resource limits
+LimitNPROC=infinity
+LimitCORE=infinity
+LimitNOFILE=infinity
+
+# Ensure TasksMax is supported in your systemd version
+TasksMax=infinity
+OOMScoreAdjust=-999
+
+[Install]
+WantedBy=multi-user.target

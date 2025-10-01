@@ -1,0 +1,96 @@
+
+- name: Setting prompt name
+  ansible.builtin.lineinfile:
+     path: "/home/ec2-user/.bashrc"
+     line: 'export PS1="\[\e[1;31m\]\u\[\e[0m\]@\[\e[1;34m\]{{ role_name }}\[\e[0m\] \w \$ "'
+     create: true
+     mode: '0644'
+
+- name: Installing firewalld
+  ansible.builtin.dnf: 
+    name: firewalld 
+    state: latest
+  
+- name: Remove preinstalled Docker
+  ansible.builtin.shell: |
+     dnf remove docker \
+                docker-client \
+                docker-client-latest \
+                docker-common \
+                docker-latest \
+                docker-latest-logrotate \
+                docker-logrotate \
+                docker-engine \
+                podman \
+                runc
+  args:
+    executable: /bin/bash
+
+- name: Installing dnf-plugins-core
+  ansible.builtin.dnf:
+    name:  dnf-plugins-core
+    state: present
+
+- name: add repo docker
+  ansible.builtin.shell: |
+      dnf config-manager --add-repo https://download.docker.com/linux/rhel/docker-ce.repo
+  args:
+    executable: /bin/bash
+
+- name:  install docker
+  ansible.builtin.dnf: 
+    name: 
+      -  docker-ce 
+      -  docker-ce-cli 
+      -  containerd.io 
+      -  docker-buildx-plugin 
+      -  docker-compose-plugin
+    state: present
+
+
+
+- name: Enable Docker 
+  ansible.builtin.systemd_service: 
+   name:  docker
+   state: restarted
+   enabled: true
+   
+- name: Enable  firewalld
+  ansible.builtin.systemd_service: 
+   name:  firewalld
+   state: restarted
+   enabled: true
+
+- name: Add ec2 user to docker group
+  ansible.builtin.user: 
+     name: ec2-user 
+     groups: docker 
+     append: yes
+
+
+- name: Enabling ports with firewalld
+  ansible.builtin.shell: | 
+     firewall-cmd --zone=public --add-port=22/tcp --permanent  && firewall-cmd --reload
+     firewall-cmd --zone=public --add-port=8443/tcp --permanent  && firewall-cmd --reload
+     firewall-cmd --zone=public --add-port=80/tcp --permanent  && firewall-cmd --reload
+     firewall-cmd --zone=public --add-port=443/tcp --permanent  && firewall-cmd --reload
+     firewall-cmd --zone=public --add-port=30000-32767/tcp --permanent  && firewall-cmd --reload
+  args:
+    executable: /bin/bash
+
+
+# install minikube
+- name: Install minikube 
+  ansible.builtin.dnf: 
+    name: https://storage.googleapis.com/minikube/releases/latest/minikube-latest.x86_64.rpm
+    state: present
+    disable_gpg_check: true
+
+#sudo minikube start --driver=docker
+
+# installl k9s
+- name: Installing K9s
+  ansible.builtin.dnf:
+    name: https://github.com/derailed/k9s/releases/download/v0.50.6/k9s_linux_amd64.rpm
+    state: present
+    disable_gpg_check: true

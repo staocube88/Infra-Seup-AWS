@@ -1,0 +1,87 @@
+###########################################################################
+#  Author : MANU P ANAND : email:manupanand@outlook.com
+############################################################################
+
+
+
+# including common task
+- name: Including common task 
+  ansible.builtin.include_role:  
+    name: common 
+    tasks_from: common
+
+- name: Setting prompt name
+  ansible.builtin.lineinfile:
+     path: "/home/ec2-user/.bashrc"
+     line: 'export PS1="\[\e[1;31m\]\u\[\e[0m\]@\[\e[1;34m\]{{ role_name }}\[\e[0m\] \w \$ "'
+     create: true
+     mode: '0644'
+
+- name: Source bashrc
+  ansible.builtin.shell: |
+      source ~/.bashrc
+  args:
+   executable:  /bin/bash
+# write fire wall here
+
+- name: Enable ports using firewalld
+  ansible.builtin.shell: "firewall-cmd --zone=public --add-port={{ item }}/tcp --permanent && firewall-cmd --reload"
+  loop: 
+    - 22 # ssh 
+    - 443 #https
+    - 179 
+    - 5473
+    - 8080
+ 
+
+- name: Enable port range - 10247-10260 node port
+  ansible.builtin.shell: "firewall-cmd --zone=public --add-port=10247-10260/tcp --permanent && firewall-cmd --reload" 
+
+   
+- name: Enable port range - 30000-32767 node port
+  ansible.builtin.shell: "firewall-cmd --zone=public --add-port=30000-32767/tcp --permanent && firewall-cmd --reload" 
+- name: Enable port range - 4789/udp
+  ansible.builtin.shell: "firewall-cmd --zone=public --add-port=4789/udp --permanent && firewall-cmd --reload" 
+- name: Enable port range -51820-51821/udp
+  ansible.builtin.shell: "firewall-cmd --zone=public --add-port=51820-51821/udp --permanent && firewall-cmd --reload" 
+- name: Enable protocol 4
+  ansible.builtin.shell: "firewall-cmd --zone=public --add-protocol=4 --permanent && firewall-cmd --reload" 
+
+- name: Enable firewalld
+  ansible.builtin.systemd_service:
+     name: firewalld
+     state: restarted
+     enabled: true
+
+- name: Enable Containerd
+  ansible.builtin.systemd_service:
+     name: containerd
+     state: restarted
+     enabled: true
+
+- name: Restart kubelet 
+  ansible.builtin.systemd_service: 
+    name: kubelet 
+    state: restarted 
+    enabled: true 
+    daemon_reload: true 
+
+- name: Add --node-name to kubeadm join command in script
+  lineinfile:
+    path: /tmp/join.sh
+    regexp: '^(kubeadm join .*sha256:[a-f0-9]{64})'
+    line: '\1 --node-name {{ node_name }}'
+    backrefs: yes
+
+
+- name: Join control plane node 
+  ansible.builtin.shell: | 
+     /bin/bash   /tmp/join.sh
+     
+- name: Restart kubelet 
+  ansible.builtin.systemd_service: 
+    name: kubelet 
+    state: restarted 
+    enabled: true 
+    daemon_reload: true 
+
