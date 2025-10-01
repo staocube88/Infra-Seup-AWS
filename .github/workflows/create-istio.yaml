@@ -1,0 +1,58 @@
+name: Istio Deployment Pipeline
+
+on:
+  workflow_run:
+    workflows: ["K8s provisioning pipeline"]   # <- must match the name in k8s workflow
+    types:
+      - completed
+
+jobs:
+  deploy-istio:
+    runs-on: rhel_arm
+    if: ${{ github.event.workflow_run.conclusion == 'success' }} # only run if K8s succeeded
+    steps:
+      - name: Import secrets from HashiCorp Vault
+        uses: hashicorp/vault-action@v2.4.0
+        with:
+          url: ${{ secrets.VAULT_SERVER }}
+          token: ${{ secrets.VAULT_TOKEN }}
+          tlsSkipVerify: true
+          secrets: |
+            tools/data/aws aws_user     | AWS_USER;
+            tools/data/aws aws_password | AWS_PASSWORD;
+            tools/data/aws aws_ami_id   | AWS_AMI_ID;
+
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ env.AWS_USER }}
+          aws-secret-access-key: ${{ env.AWS_PASSWORD }}
+          aws-region: us-east-1
+
+      - name: Update kubeconfig for EKS
+        run: |
+          aws eks update-kubeconfig --region us-east-1 --name dev-cluster
+          kubectl get nodes
+
+      - name: Deploy Istio with Terraform
+        run: |
+          cd istio-infra
+          terraform init -backend-config=env-dev/state.tfvars
+          terraform plan -var-file=env-dev/main.tfvars
+          terraform apply -var-file=env-dev/main.tfvars -auto-approve
+        env:
+          TF_VAR_aws_user: ${{ env.AWS_USER }}
+          TF_VAR_aws_password: ${{ env.AWS_PASSWORD }}
+          TF_VAR_aws_ami_id: ${{ env.AWS_AMI_ID }}
+
+  verify-istio:
+    runs-on: rhel_arm
+    needs: deploy-istio
+    steps:
+      - name: Verify Istio installation
+        run: |
+          kubectl get pods -n istio-system
+          kubectl get svc -n istio-system

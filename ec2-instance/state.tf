@@ -1,5 +1,7 @@
 terraform {
   backend "s3" {
-      # <-- ADD THIS LINE
+    bucket = "bimodaldemobucket"
+    key    = "ec2/dev/terraform.tfstate"
+    region = "us-east-1"
   }
 }

@@ -1,0 +1,30 @@
+name: Istio Destroy Pipeline
+on: 
+  workflow_dispatch:
+
+jobs:
+  DEV: 
+    runs-on: rhel_arm 
+    steps:
+      - name: Import secrets from HashiCorp Vault
+        uses: hashicorp/vault-action@v2.4.0
+        with: 
+          url: ${{ secrets.VAULT_SERVER }}
+          token: ${{ secrets.VAULT_TOKEN }}
+          tlsSkipVerify: true
+          secrets: | 
+            tools/data/aws aws_user     | AWS_USER;   
+            tools/data/aws aws_password | AWS_PASSWORD;
+            tools/data/aws aws_ami_id   | AWS_AMI_ID;
+
+      - uses: actions/checkout@v4
+
+      - name: Destroy Istio Infrastructure
+        run: |
+          cd istio-infra
+          terraform init -backend-config=env-dev/state.tfvars
+          terraform destroy -var-file=env-dev/main.tfvars -auto-approve
+        env: 
+          TF_VAR_aws_user: ${{ env.AWS_USER }}
+          TF_VAR_aws_password: ${{ env.AWS_PASSWORD }}
+          TF_VAR_aws_ami_id: ${{ env.AWS_AMI_ID }}
